@@ -1,3 +1,5 @@
+using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections;
@@ -12,6 +14,7 @@ namespace Todo.Api.Controllers
 {
     [ApiController]
     [Route("v1/todos")]
+    [Authorize]
     public class TodoController : ControllerBase
     {
 
@@ -22,6 +25,7 @@ namespace Todo.Api.Controllers
             [FromServices] TodoHandler handler
             )
         {
+            command.User = User.Claims.FirstOrDefault(x => x.Type == "user_id")?.Value;
             return (GenericCommandResult)handler.Handle(command);
         }
 
@@ -32,6 +36,7 @@ namespace Todo.Api.Controllers
             [FromServices] TodoHandler handler
             )
         {
+            command.User = User.Claims.FirstOrDefault(x => x.Type == "user_id")?.Value;
             return (GenericCommandResult)handler.Handle(command);
         }
 
@@ -56,24 +61,27 @@ namespace Todo.Api.Controllers
             return repository.GetAll("fchiarotti");
         }
 
-        [Route("done/{user}")]
+        [Route("done")]
         [HttpGet]
-        public IEnumerable<TodoItem> GetAllDone([FromServices] ITodoRepository repository, string user)
+        public IEnumerable<TodoItem> GetAllDone([FromServices] ITodoRepository repository)
         {
-            return repository.GetAllDone("fchiarotti");
+            var user = User.Claims.FirstOrDefault(x => x.Type == "user_id")?.Value;
+            return repository.GetAllDone(user);
         }
 
-        [Route("undone/{user}")]
+        [Route("undone")]
         [HttpGet]
-        public IEnumerable<TodoItem> GetAllUndone([FromServices] ITodoRepository repository, string user)
+        public IEnumerable<TodoItem> GetAllUndone([FromServices] ITodoRepository repository)
         {
-            return repository.GetAllUndone("fchiarotti");
+            var user = User.Claims.FirstOrDefault(x => x.Type == "user_id")?.Value;
+            return repository.GetAllUndone(user);
         }
 
-        [Route("done/{date}/{user}")]
+        [Route("done/{date}")]
         [HttpGet]
-        public IEnumerable<TodoItem> GetAllDoneByPeriod([FromServices] ITodoRepository repository, bool done, DateTime date, string user)
+        public IEnumerable<TodoItem> GetAllDoneByPeriod([FromServices] ITodoRepository repository, bool done, DateTime date)
         {
+            var user = User.Claims.FirstOrDefault(x => x.Type == "user_id")?.Value;
             return repository.GetByPeriod(
                 user,
                 date,
@@ -81,10 +89,11 @@ namespace Todo.Api.Controllers
                 );
         }
 
-        [Route("undone/{date}/{user}")]
+        [Route("undone/{date}")]
         [HttpGet]
-        public IEnumerable<TodoItem> GetAllUndoneByPeriod([FromServices] ITodoRepository repository, bool done, DateTime date, string user)
+        public IEnumerable<TodoItem> GetAllUndoneByPeriod([FromServices] ITodoRepository repository, bool done, DateTime date)
         {
+            var user = User.Claims.FirstOrDefault(x => x.Type == "user_id")?.Value;
             return repository.GetByPeriod(
                 user,
                 date,
